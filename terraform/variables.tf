@@ -1,7 +1,7 @@
 variable "name" {
   description = "Prefix for all resources"
-  type = string
-  default = "k3s"
+  type        = string
+  default     = "k3s"
 }
 
 variable "project_id" {
@@ -29,7 +29,7 @@ variable "network_cidr" {
 
 variable "required_apis" {
   description = "Required APIS"
-  type = set(string)
+  type        = set(string)
 }
 
 variable "machine_type" {
@@ -40,5 +40,5 @@ variable "machine_type" {
 
 variable "tags" {
   description = "Tags"
-  type = set(string)
+  type        = set(string)
 }

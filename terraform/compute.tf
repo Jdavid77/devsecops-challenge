@@ -1,6 +1,6 @@
 # K3s VM Instance
 resource "google_compute_instance" "this" {
-  name         = "k3s-vm"
+  name         = "${var.name}-vm"
   machine_type = var.machine_type
   zone         = var.zone
   project      = var.project_id

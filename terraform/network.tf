@@ -1,6 +1,6 @@
 # VPC Network
 resource "google_compute_network" "this" {
-  name                    = "k3s-network"
+  name                    = "${var.name}-network"
   auto_create_subnetworks = false
   project                 = var.project_id
 
@@ -9,7 +9,7 @@ resource "google_compute_network" "this" {
 
 
 resource "google_compute_subnetwork" "this" {
-  name          = "k3s-subnet"
+  name          = "${var.name}-subnet"
   ip_cidr_range = var.network_cidr
   region        = var.region
   network       = google_compute_network.this.id
@@ -20,14 +20,14 @@ resource "google_compute_subnetwork" "this" {
 }
 
 resource "google_compute_router" "this" {
-  name    = "k3s-router"
+  name    = "${var.name}-router"
   region  = var.region
   network = google_compute_network.this.id
   project = var.project_id
 }
 
 resource "google_compute_router_nat" "this" {
-  name    = "k3s-nat"
+  name    = "${var.name}-nat"
   router  = google_compute_router.this.name
   region  = var.region
   project = var.project_id
@@ -46,7 +46,7 @@ resource "google_compute_router_nat" "this" {
 }
 
 resource "google_compute_firewall" "this" {
-  name      = "allow-iap"
+  name      = "${var.name}-allow-iap"
   network   = google_compute_network.this.name
   direction = "INGRESS"
   project   = var.project_id

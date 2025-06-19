@@ -1,5 +1,5 @@
 resource "google_service_account" "this" {
-  account_id   = "k3s-vm-sa"
+  account_id   = "${var.name}-vm-sa"
   display_name = "K3s VM Service Account"
   project      = var.project_id
 }

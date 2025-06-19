@@ -25,7 +25,7 @@ setup-gh-service-account:
 		--role="roles/storage.admin" && \
 	gcloud projects add-iam-policy-binding $$PROJECT_ID \
 		--member="serviceAccount:$$SA_NAME@$$PROJECT_ID.iam.gserviceaccount.com" \
-		--role="roles/iam.serviceAccountUser" && \
+		--role="roles/resourcemanager.projectIamAdmin" && \
 	gcloud iam service-accounts keys create github-actions-key.json \
 		--iam-account "$$SA_NAME@$$PROJECT_ID.iam.gserviceaccount.com" \
 		--project $$PROJECT_ID

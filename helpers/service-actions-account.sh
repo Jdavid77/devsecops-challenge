@@ -31,6 +31,11 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/compute.instanceAdmin.v1"
 
+# Grant IAP-secured Tunnel User role
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:github-actions-deploy@$PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/iap.tunnelResourceAccessor"
+
 gcloud iam service-accounts keys create github-actions-deploy-key.json \
   --iam-account "$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
   --project $PROJECT_ID

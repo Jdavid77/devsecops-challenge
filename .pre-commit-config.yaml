@@ -1,10 +1,14 @@
 fail_fast: false
 repos:
-- repo: https://github.com/antonbabenko/pre-commit-terraform
-  rev: v1.99.4 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
-  hooks:
-    - id: terraform_fmt
-    - id: terraform_tflint
-    - id: terraform_trivy
-      args:
-        - --args=--severity=HIGH,CRITICAL
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.99.4 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_tflint
+      - id: terraform_trivy
+        args:
+          - --args=--severity=HIGH,CRITICAL
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.17.1
+    hooks:
+      - id: yamlfmt

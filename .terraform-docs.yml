@@ -1,19 +1,14 @@
 formatter: "markdown" # this is required
-
 version: ""
-
 header-from: terraform/main.tf
 footer-from: ""
-
 recursive:
   enabled: false
-
 sections:
   show:
     - providers
     - inputs
     - outputs
-
 content: |-
   {{ .Header }}
 
@@ -24,23 +19,16 @@ content: |-
   {{ .Requirements }}
 
   {{ .Footer }}
-
 output:
   file: ""
   mode: replace
-  template: |-
-    <!-- BEGIN_TF_DOCS -->
-    {{ .Content }}
-    <!-- END_TF_DOCS -->    
-
+  template: "<!-- BEGIN_TF_DOCS -->\n{{ .Content }}\n<!-- END_TF_DOCS -->    "
 output-values:
   enabled: false
   from: ""
-
 sort:
   enabled: true
   by: name
-
 settings:
   anchor: true
   color: false

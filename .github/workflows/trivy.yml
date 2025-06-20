@@ -10,7 +10,7 @@ jobs:
         defaults:
           run:
             shell: bash
-            working-directory: ./api
+            working-directory: api
         permissions:
           contents: write
           packages: write

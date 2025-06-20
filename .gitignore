@@ -18,6 +18,7 @@ Thumbs.db
 
 # GCP
 github-actions-key.json
+github-actions-deploy-key.json
 
 # sSH
 *.pub

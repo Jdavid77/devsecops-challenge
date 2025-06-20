@@ -3,7 +3,12 @@ name: 'Terraform GCP Deploy'
 on:
   push:
     branches: [main]
+    paths:
+      - 'terraform/**'
+
   pull_request:
+    branches: [main]
+
 
 jobs:
   terraform:

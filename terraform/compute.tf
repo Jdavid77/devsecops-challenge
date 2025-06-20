@@ -26,10 +26,11 @@ resource "google_compute_instance" "this" {
   }
 
   metadata = {
-    enable-oslogin = "TRUE"
+    enable-oslogin = "FALSE"
+    ssh-keys       = "ubuntu:${file("${path.module}/ssh/id_rsa.pub")}"
   }
 
-  metadata_startup_script = file("${path.module}/scripts/k3s-install.sh")
+  metadata_startup_script = file("${path.module}/scripts/setup.sh")
 
   depends_on = [
     google_project_service.required_apis,

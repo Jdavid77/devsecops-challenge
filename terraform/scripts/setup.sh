@@ -3,10 +3,10 @@ set -euo pipefail
 
 # --- Configuration ---
 export K3S_VERSION="v1.32.5+k3s1"
-export K3S_ADMIN_GROUP="k3s-admins"
 export GITHUB_ACTIONS_USER="github-actions"
-export KUBECONFIG_PATH="/etc/rancher/k3s/k3s.yaml"
+export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
 export LOG_FILE="/var/log/setup.log"
+export MANIFESTS_DIRECTORY="/var/lib/rancher/k3s/server/manifests"
 
 # --- Logging ---
 exec > >(tee "$LOG_FILE") 2>&1
@@ -15,18 +15,6 @@ exec > >(tee "$LOG_FILE") 2>&1
 echo "Updating system packages..."
 apt-get update && apt-get upgrade -y
 
-# --- User and Group Setup ---
-echo "Creating k3s admin group if it doesn't exist..."
-if ! getent group "$K3S_ADMIN_GROUP" > /dev/null; then
-  groupadd "$K3S_ADMIN_GROUP"
-fi
-
-echo "Creating Github Actions user and adding to k3s admin group..."
-if ! id "$GITHUB_ACTIONS_USER" &>/dev/null; then
-  useradd -m -s /bin/bash -G "$K3S_ADMIN_GROUP" "$GITHUB_ACTIONS_USER"
-else
-  usermod -aG "$K3S_ADMIN_GROUP" "$GITHUB_ACTIONS_USER"
-fi
 
 # --- k3s Installation ---
 echo "Installing k3s version $K3S_VERSION..."
@@ -38,24 +26,54 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="$K3S_VERSION" sh -s - \
 # --- k3s Configuration ---
 echo "Configuring k3s kubeconfig permissions..."
 cat <<EOF > /etc/rancher/k3s/config.yaml
-write-kubeconfig-mode: "0640"
-write-kubeconfig-group: "$K3S_ADMIN_GROUP"
+write-kubeconfig-mode: "0600"
 EOF
 
 systemctl stop k3s
 sleep 5
 systemctl start k3s
 
-# --- Helm Installation ---
-echo "Installing Helm..."
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
+# Wait for k3s to be ready
+echo "Waiting for directory '$MANIFESTS_DIRECTORY' to be created..."
+while [ ! -d "$MANIFESTS_DIRECTORY" ]; do
+    echo "Directory not found, waiting 2 seconds..."
+    sleep 2
+done
 
 # --- Kyverno Installation ---
 echo "Installing Kyverno and adding policy repo..."
-helm repo add kyverno https://kyverno.github.io/kyverno/
-helm repo update
-helm install kyverno kyverno/kyverno -n kyverno --create-namespace
+cat <<EOF > /var/lib/rancher/k3s/server/manifests/kyverno.yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: kyverno
+  namespace: kube-system
+spec:
+  repo: https://kyverno.github.io/kyverno/
+  chart: kyverno
+  targetNamespace: kyverno
+  createNamespace: true
+  version: 3.4.3
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: allow-only-node-http
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: allow-only-node-http
+      match:
+        resources:
+          kinds:
+            - Pod
+      validate:
+        message: "Only images from ghcr.io/jdavid77/node-http are allowed."
+        pattern:
+          spec:
+            containers:
+              - image: "ghcr.io/jdavid77/node-http*"
+EOF
 
-
+echo "Done!"

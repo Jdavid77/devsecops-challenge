@@ -26,8 +26,7 @@ resource "google_compute_instance" "this" {
   }
 
   metadata = {
-    enable-oslogin = "FALSE"
-    ssh-keys       = "ubuntu:${file("${path.module}/ssh/id_rsa.pub")}"
+    enable-oslogin = "TRUE"
   }
 
   metadata_startup_script = file("${path.module}/scripts/setup.sh")

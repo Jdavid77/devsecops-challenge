@@ -11,21 +11,4 @@ create-bucket:
 	gsutil versioning set on gs://k3s-terraform-state
 
 setup-gh-service-account:
-	PROJECT_ID=$$(gcloud config get-value project) && \
-	SA_DISPLAY_NAME="GitHub Actions" && \
-	SA_NAME=github-actions && \
-	gcloud iam service-accounts create $$SA_NAME \
-		--project $$PROJECT_ID \
-		--display-name "$$SA_DISPLAY_NAME" && \
-	gcloud projects add-iam-policy-binding $$PROJECT_ID \
-		--member="serviceAccount:$$SA_NAME@$$PROJECT_ID.iam.gserviceaccount.com" \
-		--role="roles/editor" && \
-	gcloud projects add-iam-policy-binding $$PROJECT_ID \
-		--member="serviceAccount:$$SA_NAME@$$PROJECT_ID.iam.gserviceaccount.com" \
-		--role="roles/storage.admin" && \
-	gcloud projects add-iam-policy-binding $$PROJECT_ID \
-		--member="serviceAccount:$$SA_NAME@$$PROJECT_ID.iam.gserviceaccount.com" \
-		--role="roles/resourcemanager.projectIamAdmin" && \
-	gcloud iam service-accounts keys create github-actions-key.json \
-		--iam-account "$$SA_NAME@$$PROJECT_ID.iam.gserviceaccount.com" \
-		--project $$PROJECT_ID
+	bash helpers/service-account.sh

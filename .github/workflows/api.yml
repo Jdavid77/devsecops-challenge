@@ -1,0 +1,21 @@
+name: Release API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  scan:
+    name: Trivy
+    uses: ./.github/workflows/trivy.yml
+
+  build-push:
+    name: Docker
+    needs: scan
+    uses: ./.github/workflows/docker-build-push.yml

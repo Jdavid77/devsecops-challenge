@@ -1,0 +1,30 @@
+name: Trivy
+
+on:
+  workflow_call:
+    
+jobs:
+    scan:
+        name: Trivy Vulnerability Scan
+        runs-on: ubuntu-latest
+        defaults:
+          run:
+            shell: bash
+            working-directory: ./api
+        permissions:
+          contents: write
+          packages: write
+
+        steps:
+            - name: Build Docker image
+              run: docker build -t node-http:latest .
+
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@0.30.0
+              with:
+                image-ref: "node-http:latest"
+                format: "table"
+                exit-code: "1" # Fail the workflow if vulnerabilities are found.
+                ignore-unfixed: true
+                vuln-type: "os,library"
+                severity: "CRITICAL,HIGH"

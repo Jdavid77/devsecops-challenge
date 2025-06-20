@@ -1,15 +1,10 @@
-name: Docker
+name: Docker 
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'api/**'
+  workflow_call:
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
   IMAGE_NAME: jdavid77/node-http
 
 
@@ -19,7 +14,10 @@ jobs:
     permissions:
       contents: write
       packages: write
-
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./api
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

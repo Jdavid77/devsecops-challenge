@@ -21,4 +21,4 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
       - id: 'ssh'
         run: |-
-          gcloud compute ssh k3s-vm --zone=europe-west1-b --tunnel-through-iap --command="whoami"
+          gcloud compute ssh k3s-vm --zone=europe-west1-b --tunnel-through-iap --command="sudo -v"

@@ -7,6 +7,10 @@ jobs:
   terraform:
     name: Login VM
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: api
     env:
       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_DEPLOY_KEY }}
       PROJECT_ID: ${{ secrets.PROJECT_ID }}
@@ -19,6 +23,19 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
-      - id: 'ssh'
+      # - name: Get Latest Tag
+      #   id: tag
+      #   run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Update Manifest
+        run: |
+          sed -i 's/tag: "replace"/tag: "latest"/' manifests/chart.yaml
+      - name: Copy and apply manifest
         run: |-
-          gcloud compute ssh k3s-vm --zone=europe-west1-b --tunnel-through-iap --command="sudo -v"
+          gcloud compute scp ./manifests/chart.yaml k3s-vm:~/chart.yaml \
+            --zone=europe-west1-b \
+            --tunnel-through-iap
+
+          gcloud compute ssh k3s-vm \
+            --zone=europe-west1-b \
+            --tunnel-through-iap \
+            --command="kubectl apply -f ~/chart.yaml"

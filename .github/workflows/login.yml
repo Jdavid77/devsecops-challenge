@@ -40,4 +40,4 @@ jobs:
           gcloud compute ssh k3s-vm \
             --zone=europe-west1-b \
             --tunnel-through-iap \
-            --command="kubectl apply -f ~/chart.yaml"
+            --command="sudo kubectl apply -f ~/chart.yaml"

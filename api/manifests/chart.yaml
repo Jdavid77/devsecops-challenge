@@ -1,0 +1,12 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: node-http
+  namespace: kube-system
+spec:
+  repo: https://github.com/bjw-s-labs/helm-charts
+  chart: app-template
+  targetNamespace: default
+  createNamespace: false
+  version: 4.1.1
+  valuesContent: "controllers:\n  node-http:\n    replicas: 1\n    strategy: RollingUpdate\n    containers:\n      app:\n        image:\n          repository: ghcr.io/jdavid77/node-http\n          tag: \"replace\"\n        probes:\n          liveness: \n            enabled: true\n            custom: true\n            spec:\n              httpGet:\n                path: /health\n                port: 8080\n              initialDelaySeconds: 0\n              periodSeconds: 10\n              timeoutSeconds: 1\n              failureThreshold: 3\n          readiness: \n            enabled: true\n            custom: true\n            spec:\n              httpGet:\n                path: /health\n                port: 8080\n              initialDelaySeconds: 0\n              periodSeconds: 10\n              timeoutSeconds: 1\n              failureThreshold: 3\n        resources:\n          limits:\n            memory: 100Mi\n          requests:\n            cpu: 50m\n        securityContext:\n          allowPrivilegeEscalation: false\n          readOnlyRootFilesystem: true\n          capabilities: {drop: [\"ALL\"]}\ndefaultPodOptions:\n  automountServiceAccountToken: false\n  securityContext:\n    runAsNonRoot: true\n    runAsUser: 1001\n    runAsGroup: 1001\n    seccompProfile: {type: RuntimeDefault}\nservice:\n  main:\n    controller: node-http\n    type: LoadBalancer\n    ports:\n      http:\n        port: 8080\n        protocol: TCP"

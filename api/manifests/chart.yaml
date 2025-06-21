@@ -4,7 +4,7 @@ metadata:
   name: node-http
   namespace: kube-system
 spec:
-  repo: https://github.com/bjw-s-labs/helm-charts
+  repo: https://bjw-s-labs.github.io/helm-charts
   chart: app-template
   targetNamespace: default
   createNamespace: false

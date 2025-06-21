@@ -15,6 +15,8 @@ jobs:
       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_DEPLOY_KEY }}
       PROJECT_ID: ${{ secrets.PROJECT_ID }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:

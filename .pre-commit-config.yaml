@@ -12,3 +12,4 @@ repos:
     rev: v0.17.1
     hooks:
       - id: yamlfmt
+        exclude: chart.yaml

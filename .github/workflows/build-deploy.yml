@@ -1,16 +1,18 @@
-name: Docker
+name: Build and Deploy
 on:
   workflow_call:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: jdavid77/node-http
 jobs:
-  build-and-push:
-    name: Docker Build and Push
+  build:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
+    outputs:
+      image-tag: ${{ steps.tag.outputs.new_tag }}
     defaults:
       run:
         shell: bash
@@ -45,12 +47,49 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09
         with:
-          context: ./api
-          file: ./api/Dockerfile
+          context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  deploy:
+    name: Deploy to K3s
+    runs-on: ubuntu-latest
+    needs: build
+    if: needs.build.result == 'success'
+    defaults:
+      run:
+        shell: bash
+        working-directory: api
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_DEPLOY_KEY }}
+      PROJECT_ID: ${{ secrets.PROJECT_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ env.GOOGLE_CREDENTIALS }}"
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+      - name: Update Manifest
+        run: |
+          sed -i 's/tag: "replace"/tag: "${{ needs.build.outputs.image-tag }}"/' manifests/chart.yaml
+      - name: Copy and apply manifest
+        run: |-
+          gcloud compute scp ./manifests/chart.yaml k3s-vm:~/chart.yaml \
+            --zone=europe-west1-b \
+            --quiet \
+            --tunnel-through-iap
+
+          gcloud compute ssh k3s-vm \
+            --zone=europe-west1-b \
+            --tunnel-through-iap \
+            --quiet \
+            --command="sudo kubectl apply -f ~/chart.yaml"

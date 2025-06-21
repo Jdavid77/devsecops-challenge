@@ -1,9 +1,9 @@
-name: Release API
+name: API
 on:
   push:
     branches: [main]
     paths:
-      - 'api/**'
+      - "api/**"
 permissions:
   contents: write
   packages: write
@@ -11,7 +11,8 @@ jobs:
   scan:
     name: Trivy
     uses: ./.github/workflows/trivy.yml
-  build-push:
-    name: Docker
+  build-deploy:
+    name: Build-Deploy
     needs: scan
-    uses: ./.github/workflows/docker-build-push.yml
+    uses: ./.github/workflows/build-deploy.yml
+    secrets: inherit
